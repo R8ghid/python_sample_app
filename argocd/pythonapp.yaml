@@ -8,10 +8,10 @@ spec:
   source:
     repoURL: https://github.com/R8ghid/python_sample_app.git  # URL of your Git repository
     targetRevision: HEAD  # Git branch, tag, or commit SHA to deploy
-    path: /src  # Path within the Git repository (root in this example)
-    helm:
-      valueFiles:
-        - values.yaml  # Helm values file if you are using Helm (optional)
+    path: argocd  # Path within the Git repository (root in this example)
+    # helm:
+    #   valueFiles:
+    #     - values.yaml  # Helm values file if you are using Helm (optional)
   destination:
     server: 'https://kubernetes.default.svc'  # Kubernetes API server address
     namespace: default  # Namespace where your application will be deployed
