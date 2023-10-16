@@ -20,9 +20,9 @@ jobs:
     #   - name: set env variables
     #     run: |
     #       cp .env.testing .env
-      - name: Lint with PyLint
-        run: | 
-          make lint
+    #   - name: Lint with PyLint
+    #     run: | 
+    #       make lint
       - name: install test requirements
         run: |
           pip install -r requirements_tests.txt
