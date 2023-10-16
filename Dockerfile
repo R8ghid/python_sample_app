@@ -1,42 +1,20 @@
-# Build Image
-FROM    python:3.11-slim-bullseye as builder
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
 
-ARG     GIT_ACCESS_TOKEN
+# Set the working directory to /app
+WORKDIR /app
 
-COPY    requirements.txt /tmp
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-RUN     python -m venv /opt/venv
-ENV     PATH="/opt/venv/bin:$PATH"
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
-# Install git
-RUN     apt-get update && \
-        apt-get -y install git && \
-        apt-get clean && \
-        git config --global url."https://${GIT_ACCESS_TOKEN}@github.com".insteadOf "https://github.com" && \
-        pip install --upgrade pip && \
-        pip install --no-cache-dir -r /tmp/requirements.txt
+# Make port 80 available to the world outside this container
+EXPOSE 80
 
-# Run image
-FROM    python:3.11-slim-bullseye
+# Define environment variable
+ENV NAME World
 
-# Create limited rights user "python"
-RUN     mkdir -p /srv/ && \
-        addgroup --gid 9999 python && \
-        adduser --system --gid 9999 -uid 9999 python && \
-        chown python /srv/
-
-# update environment variables
-WORKDIR /srv/
-ENV     PYTHONPATH /srv/
-ENV     PATH="/opt/venv/bin:$PATH"
-
-# Copy python pacakges from builder
-COPY    --from=builder /opt/venv /opt/venv
-
-# Copy server code
-COPY    data_service /srv/data_service
-COPY    alembic.ini /srv/alembic.ini
-COPY    migrations /srv/migrations
-
-CMD     python3 data_service/run.py
-USER    python
+# Run app.py when the container launches
+CMD ["python", "app.py"]
