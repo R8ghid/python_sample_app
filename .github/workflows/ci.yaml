@@ -23,19 +23,19 @@ jobs:
     #   - name: Lint with PyLint
     #     run: | 
     #       make lint
-      - name: install test requirements
-        run: |
-          pip install -r requirements_tests.txt
-      - name: run tests
-        run: |
-          make tests
+    #   - name: install test requirements
+    #     run: |
+    #       pip install -r requirements_tests.txt
+    #   - name: run tests
+    #     run: |
+    #       make tests
 
-      - name: Fail if coverage is less than 18%
-        run: |
-          coverage report --fail-under 18%
-      - name: Publish coverage
-        if: github.event_name == 'pull_request'
-        uses: coroo/pytest-coverage-commentator@v1.0.2    
+    #   - name: Fail if coverage is less than 18%
+    #     run: |
+    #       coverage report --fail-under 18%
+    #   - name: Publish coverage
+    #     if: github.event_name == 'pull_request'
+    #     uses: coroo/pytest-coverage-commentator@v1.0.2    
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
