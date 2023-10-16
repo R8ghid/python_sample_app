@@ -1,0 +1,67 @@
+name: ci
+on: 
+  workflow_dispatch: 
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    env:
+      python-version: 3.8
+    
+    steps:
+      - name: Checkout code  
+        uses: actions/checkout@v2
+      - name: Python ${{ env.python-version }} Setup
+        uses: actions/setup-python@v2
+        with: 
+          python-version: ${{ env.python-version }}
+    #   - name: Use organization secret token to pull repo from github
+    #     run: git config --global url.https://${{ secrets.GH_ORG_ACCESS_TOKEN }}@github.com/.insteadOf https://github.com/
+    #   - name: set env variables
+    #     run: |
+    #       cp .env.testing .env
+      - name: Lint with PyLint
+        run: | 
+          make lint
+      - name: install test requirements
+        run: |
+          pip install -r requirements_tests.txt
+      - name: run tests
+        run: |
+          make tests
+
+      - name: Fail if coverage is less than 18%
+        run: |
+          coverage report --fail-under 18%
+      - name: Publish coverage
+        if: github.event_name == 'pull_request'
+        uses: coroo/pytest-coverage-commentator@v1.0.2    
+      
+    #   - name: Configure AWS credentials
+    #     uses: aws-actions/configure-aws-credentials@v1
+    #     with:
+    #       aws-access-key-id:  
+    #       aws-secret-access-key-id:
+    #       aws-region:
+
+      - name: Login to amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        id: login-ecr
+
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}    #check
+          
+      - name: Build, tag and push image to Amazon ECR
+        if: ${{ github.event_name != 'pull_request'}}
+        env:
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ecr-one
+            IMAGE_TAG: ${{ github.sha }}
+        run: |
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg GIT_ACCESS_TOKEN=${{ secrets.GH_ORG_ACCESS_TOKEN }} . 
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.vars.outputs.short_ref }}
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.vars.outputs.short_ref }}
+            docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.vars.outputs.short_ref }}-$IMAGE_TAG
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.vars.outputs.short_ref }}-$IMAGE_TAG
