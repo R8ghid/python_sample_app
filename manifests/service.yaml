@@ -4,11 +4,11 @@ metadata:
    name: py-app-svc
    namespace: prod
 spec:
-  type: LoadBalancer
   selector:
       app: python-app
+  type: NodePort    
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-  
+      NodePort: 33333
