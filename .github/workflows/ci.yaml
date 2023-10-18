@@ -31,7 +31,7 @@ jobs:
 
       - name: Set output
         id: vars
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}    
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}  #extracting the short reference from the GITHUB_REF variable and setting it as the value of the short_ref output variable  
           
       - name: Build, tag and push image to Amazon ECR
         if: ${{ github.event_name != 'pull_request'}}
