@@ -1,7 +1,7 @@
 name: ci
 on:
-  push:
-    branches: main 
+  # push:
+  #   branches: main 
   workflow_dispatch: 
 
 jobs: 
@@ -16,28 +16,7 @@ jobs:
       - name: Python ${{ env.python-version }} Setup
         uses: actions/setup-python@v2
         with: 
-          python-version: ${{ env.python-version }}
-    #   - name: Use organization secret token to pull repo from github
-    #     run: git config --global url.https://${{ secrets.GH_ORG_ACCESS_TOKEN }}@github.com/.insteadOf https://github.com/
-    #   - name: set env variables
-    #     run: |
-    #       cp .env.testing .env
-    #   - name: Lint with PyLint
-    #     run: | 
-    #       make lint
-    #   - name: install test requirements
-    #     run: |
-    #       pip install -r requirements_tests.txt
-    #   - name: run tests
-    #     run: |
-    #       make tests
-
-    #   - name: Fail if coverage is less than 18%
-    #     run: |
-    #       coverage report --fail-under 18%
-    #   - name: Publish coverage
-    #     if: github.event_name == 'pull_request'
-    #     uses: coroo/pytest-coverage-commentator@v1.0.2    
+          python-version: ${{ env.python-version }} 
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -52,14 +31,14 @@ jobs:
 
       - name: Set output
         id: vars
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}    #check
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}    
           
       - name: Build, tag and push image to Amazon ECR
         if: ${{ github.event_name != 'pull_request'}}
         env:
             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
             ECR_REPOSITORY: ecr-one
-            IMAGE_TAG: ${{ github.sha }}
+            IMAGE_TAG: ${{ github.sha }} #commit unique tag 
         run: |
             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . 
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
